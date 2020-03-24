@@ -26,10 +26,11 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({history, log
 
     const checkAnswer = () => {
         if(challenge.status !== 'Success') return
-        if(value !== challenge.data.correct)
+        if(challenge.data.type !== 'upload' && value.trim().toLowerCase() !== challenge.data.correct?.trim().toLowerCase())
             setError(true)
         else {
             setError(false)
+            setValue('')
             setCurrentChallengeNumber(current => current + 1)
         }
     }
