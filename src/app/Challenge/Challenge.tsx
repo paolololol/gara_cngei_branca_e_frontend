@@ -15,6 +15,7 @@ interface ChallengeProps {
 const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({history, login, challenge, getChallenge, submitChallenge}) => {
     const [challengeNumber, setCurrentChallengeNumber] = useState(1)
     const [value, setValue] = useState<string>('')
+    const [error, setError] = useState<boolean>(false)
     useEffect(() => {
         if(login.status !== 'Success')
             history.replace('/login')
@@ -22,6 +23,17 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({history, log
     useEffect(() => {
         getChallenge(challengeNumber)
     }, [challengeNumber, getChallenge])
+
+    const checkAnswer = () => {
+        if(challenge.status !== 'Success') return
+        if(value !== challenge.data.correct)
+            setError(true)
+        else {
+            setError(false)
+            setCurrentChallengeNumber(current => current + 1)
+        }
+    }
+    
     if(!challenge || challenge.status !== 'Success') return null
     else {
     return (
@@ -40,9 +52,10 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({history, log
                     />
                 )}
                 {challenge.data.type === 'risposta_libera' &&
-                    <TextInput placeholder='Inserisci la risposta' />}
+                    <TextInput onChange={(event: any) => setValue(event.target.value)} placeholder='Inserisci la risposta' />}
+                {error && <Text color='error'>La tua risposta non e' corretta!</Text>}
                 <Button margin={{ top: 'small' }} primary label={challenge.data.type === 'upload' ? 'Carica' : 'Procedi'}
-                    onClick={() => setCurrentChallengeNumber(current => current + 1)} />
+                    onClick={checkAnswer} />
                 </Box>
         </Box>
     )
