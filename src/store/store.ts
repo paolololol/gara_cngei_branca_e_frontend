@@ -1,8 +1,11 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
+import userReducer from './user'
+import challengeReducer from './challenge'
 
 export const store = configureStore({
   reducer: {
-    login: () => ({})
+    login: userReducer,
+    challenge: challengeReducer
   },
 });
 

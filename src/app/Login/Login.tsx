@@ -1,7 +1,19 @@
-import React, { useState } from 'react'
-import { Box, TextInput, Button, Heading } from 'grommet'
+import React, { useState, useEffect } from 'react'
+import { Text, Box, TextInput, Button, Heading } from 'grommet'
+import { LoginData, User } from '../../store/user'
+import State from '../../@types/State'
+import { RouteComponentProps } from 'react-router'
 
-const Login: React.FC = () => {
+interface LoginProps {
+    login: (data: LoginData) => void
+    user: State<User>
+}
+
+const Login: React.FC<LoginProps & RouteComponentProps> = ({login, user, history}) => {
+    useEffect(() => {
+        if(user.status === 'Success')
+            history.replace('/challenge')
+    }, [history, user])
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     return (
@@ -23,8 +35,10 @@ const Login: React.FC = () => {
                 </Heading>
                 <TextInput placeholder='Codice ptg' onChange={(event) => setUsername(event.target.value)} />
                 <TextInput type='password' placeholder='Password' onChange={(event) => setPassword(event.target.value)} />
+                {user.status === 'Failure' && <Text color='error'>Le credenziali non sono corrette!</Text>}
                 <Button
                     primary
+                    onClick={() => login({identifier: username, password})}
                     label='Accedi'
                     disabled={username.length < 5 && password.length < 5}
                 />

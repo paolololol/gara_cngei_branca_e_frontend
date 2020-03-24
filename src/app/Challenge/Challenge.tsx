@@ -1,65 +1,52 @@
-import React, { useState } from 'react'
-import { Box, Text, Heading, Paragraph, TextInput, Button } from 'grommet'
+import React, { useState, useEffect } from 'react'
+import { Image, Box, Text, Heading, Paragraph, TextInput, Button, RadioButtonGroup } from 'grommet'
+import State from '../../@types/State'
+import {Challenge as IChallenge} from '../../store/challenge'
+import { User } from '../../store/user'
+import { RouteComponentProps } from 'react-router'
 
-interface BaseChallenge {
-    title: string,
-    description: string,
-    img?: string,
-    video?: string,
-    type: 'Open' | 'Choice' | 'Video' | 'Picture' | 'Audio'
+interface ChallengeProps {
+    challenge: State<IChallenge>,
+    login: State<User>,
+    getChallenge: (id: number) => void
+    submitChallenge: (data: any) => void
 }
 
-interface ChoiceChallenge extends BaseChallenge {
-    type: 'Choice'
-    choices: string[]
-    correct: string
-}
-
-interface OpenChallenge extends BaseChallenge {
-    type: 'Open',
-    correct: string
-}
-
-interface VideoChallenge extends BaseChallenge {
-    type: 'Video'
-}
-
-type Challenge = ChoiceChallenge | OpenChallenge | VideoChallenge
-
-const mockChallenges: Challenge[] = [
-    {
-        type: 'Open',
-        title: 'Io so a memoria il morse',
-        description: 'Decifrate il messaggio nascosto!',
-        correct: 'Prova test 123',
-        img: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/8e6ea913-8ccc-4924-82f0-e97117d13336/d9k9ie3-eb9df372-2e34-4480-a0e4-3ec58df7c6f4.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzhlNmVhOTEzLThjY2MtNDkyNC04MmYwLWU5NzExN2QxMzMzNlwvZDlrOWllMy1lYjlkZjM3Mi0yZTM0LTQ0ODAtYTBlNC0zZWM1OGRmN2M2ZjQucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.Xhh0HCmqQWZA0cdJXucOk4bzYqbheIW6DQzUWzjaCJU'
-    },
-    {
-        type: 'Video',
-        title: 'Gara canora',
-        description: 'Chiamatevi su Skype, Discord, Google Meet o simili e registrate un video di voi che cantate una canzone scout a vostra scelta',
-        video: '<iframe width="100%" height="315" src="https://www.youtube.com/embed/ZTLAx3VDX7g" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
-    },
-]
-
-const Challenge: React.FC = () => {
-    const [challengeNumber, setCurrentChallengeNumber] = useState(0)
-    const currentChallenge = mockChallenges[challengeNumber]
+const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({history, login, challenge, getChallenge, submitChallenge}) => {
+    const [challengeNumber, setCurrentChallengeNumber] = useState(1)
+    const [value, setValue] = useState<string>('')
+    useEffect(() => {
+        if(login.status !== 'Success')
+            history.replace('/login')
+    }, [history, login])
+    useEffect(() => {
+        getChallenge(challengeNumber)
+    }, [challengeNumber, getChallenge])
+    if(!challenge || challenge.status !== 'Success') return null
+    else {
     return (
-        <Box wrap direction='row' pad='small' align='center' height='100%'>
+        <Box wrap direction='row' pad='small' align='center' justify='center' height='100%'>
             <Box background='white' pad='small' round='medium'>
-                <Heading level={2} margin='small'>{currentChallenge.title}</Heading>
-                <Text size='xsmall' margin='xsmall'>Sfida n.{challengeNumber + 1}</Text>
-                <Paragraph margin='xsmall'>{currentChallenge.description}</Paragraph>
-                {currentChallenge.img && <img src={currentChallenge.img} />}
-                {currentChallenge.video && <div dangerouslySetInnerHTML={{ __html: currentChallenge.video }} />}
-                {currentChallenge.type === 'Open' &&
+                <Heading level={2} margin='small'>{challenge.data.title}</Heading>
+                <Text size='xsmall' margin='xsmall'>Sfida n.{challengeNumber}</Text>
+                <Paragraph margin='xsmall'>{challenge.data.description}</Paragraph>
+                {challenge.data.attachment.map((x) => <Image src={`http://cngeiptg.think3.tech:1337/${x.url}`} style={{objectFit: 'contain'}}/>)}
+                {challenge.data.type === 'scelta_multipla' && (
+                    <RadioButtonGroup
+                        name='multiple'
+                        options={challenge.data.answers.split('\n').filter(x => x.trim().length)}
+                        value={value}
+                        onChange={(event: any) => setValue(event.target.value)}
+                    />
+                )}
+                {challenge.data.type === 'risposta_libera' &&
                     <TextInput placeholder='Inserisci la risposta' />}
-                <Button margin={{ top: 'small' }} primary label={currentChallenge.type === 'Video' ? 'Carica' : 'Procedi'}
+                <Button margin={{ top: 'small' }} primary label={challenge.data.type === 'upload' ? 'Carica' : 'Procedi'}
                     onClick={() => setCurrentChallengeNumber(current => current + 1)} />
                 </Box>
         </Box>
     )
+    }
 }
 
 export default Challenge
