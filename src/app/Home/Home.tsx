@@ -4,6 +4,7 @@ import { Link, RouteComponentProps } from 'react-router-dom'
 import DateCountdown from 'react-date-countdown-timer'
 import styled from 'styled-components'
 import cngei from '../../assets/cngei.png'
+import quarantena from '../../assets/quarantena.png'
 import branca from '../../assets/branca.png'
 import './Home.css'
 import State from '../../@types/State'
@@ -11,6 +12,7 @@ import { User } from '../../store/user'
 
 const Logo = styled.img`
     max-height: 20vh;
+    object-fit: contain;
 `
 
 const StyledLink = styled(Link)`
@@ -52,6 +54,7 @@ const Home: React.FC<HomeProps & RouteComponentProps> = ({login, history}) => {
         >
             <Box direction='row' gap='small'>
                 <Logo src={cngei} />
+                <Logo src={quarantena} />
                 <Logo src={branca} />
             </Box>
             <Box
