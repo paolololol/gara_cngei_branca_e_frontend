@@ -11,16 +11,17 @@ export interface Attachment {
 }
 
 export interface Challenge {
+    id: number,
     title: string,
     description: string,
     type: 'risposta_libera' | 'scelta_multipla' | 'upload'
     multiple: boolean | null
-    correct: string | null
     attachment: Attachment[]
+    submissions: any[]
     answers: string
 }
 
-type ChallengeState = State<Challenge>;
+type ChallengeState = State<Challenge[]>;
 
 const initialState: ChallengeState = {
     status: 'NotAsked'
@@ -30,7 +31,7 @@ export const slice = createSlice<ChallengeState, SliceCaseReducers<ChallengeStat
     name: 'challenge',
     initialState,
     reducers: {
-        _setChallenge: (_, action: PayloadAction<Challenge>) => ({ status: 'Success', data: action.payload }),
+        _setChallenge: (_, action: PayloadAction<Challenge[]>) => ({ status: 'Success', data: action.payload }),
         _setLoading: () => ({ status: 'Loading' }),
         _setError: (_, action: PayloadAction<string>) => ({
             status: 'Failure',
@@ -44,18 +45,12 @@ export interface LoginData {
     password: string
 }
 
-export const getChallenge = (id: number): AppThunk => async dispatch => {
+export const getChallenges = (): AppThunk => async dispatch => {
     const { _setChallenge, _setError, _setLoading } = slice.actions;
     dispatch(_setLoading(null));
     try {
         const { data } = await axios.get('http://cngeiptg.think3.tech:1337/sfides')
-        const challenge = data.find((x: any) => x.id === id)
-        console.log(challenge)
-        if(challenge) {
-            dispatch(_setChallenge(challenge)) 
-        } else {
-            ;(window as any).location = '/victory'
-        }
+        dispatch(_setChallenge(data.sort((a: Challenge,b: Challenge) => a.id < b.id ? -1 : 1))) 
     } catch (e) {
         dispatch(_setError(e.message))
     }

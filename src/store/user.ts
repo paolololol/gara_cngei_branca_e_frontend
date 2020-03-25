@@ -40,9 +40,19 @@ export interface LoginData {
 export const logout = (): AppThunk => dispatch => {
     const { _logout } = slice.actions;
     axios.defaults.headers['Authorization'] = undefined
+    localStorage.removeItem('user')
         ; (window as any).location = '/'
     dispatch(_logout(null));
 };
+
+export const restore = (): AppThunk => async dispatch => {
+    const { _setLoading, _setError, _login } = slice.actions;
+    const raw = localStorage.getItem('user') 
+    if(!raw) return
+    const data = JSON.parse(raw)
+    axios.defaults.headers["Authorization"] = `Bearer ${data.jwt}`
+    dispatch(_login(data))
+}
 
 export const login = (loginData: LoginData): AppThunk => async dispatch => {
     const { _setLoading, _setError, _login } = slice.actions;
@@ -50,7 +60,7 @@ export const login = (loginData: LoginData): AppThunk => async dispatch => {
     try {
         const { data } = await axios.post('http://cngeiptg.think3.tech:1337/auth/local', loginData)
         axios.defaults.headers["Authorization"] = `Bearer ${data.jwt}`
-        localStorage.setItem('jwt', data.jwt)
+        localStorage.setItem('user', JSON.stringify(data))
         dispatch(_login(data))
     } catch (e) {
         dispatch(_setError(e.message))

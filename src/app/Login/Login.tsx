@@ -6,10 +6,14 @@ import { RouteComponentProps } from 'react-router'
 
 interface LoginProps {
     login: (data: LoginData) => void
+    restore: () => void
     user: State<User>
 }
 
-const Login: React.FC<LoginProps & RouteComponentProps> = ({login, user, history}) => {
+const Login: React.FC<LoginProps & RouteComponentProps> = ({login, user, history, restore}) => {
+    useEffect(() => {
+        restore()
+    }, [restore])
     useEffect(() => {
         if(user.status === 'Success')
             history.replace('/challenge')
