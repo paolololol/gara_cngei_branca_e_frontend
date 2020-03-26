@@ -11,7 +11,7 @@ import State from '../../@types/State'
 import { User } from '../../store/user'
 
 const Logo = styled.img`
-    max-height: 20vh;
+    max-width: 20vw;
     object-fit: contain;
 `
 
