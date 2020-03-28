@@ -70,8 +70,8 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({
                     <Paragraph margin='xsmall'>{challenge.description}</Paragraph>
                     <Box margin={{ vertical: 'medium' }}>
                         {challenge.attachment.map((x) => ['.jpeg', '.jpg', '.png', '.gif', '.tiff', '.webp'].includes(x.ext)
-                            ? <img src={`${x.url.startsWith('http') ? '' : 'http://admin.garaptg.online/'}${x.url}`} style={{ objectFit: 'contain', maxHeight: '40vh' }} />
-                            : <video src={`${x.url.startsWith('http') ? '' : 'http://admin.garaptg.online/'}${x.url}`} style={{ objectFit: 'contain', maxHeight: '40vh' }} />)}
+                            ? <img src={`${x.url.startsWith('http') ? '' : 'http://admin.garaptg.online'}${x.url}`} style={{ objectFit: 'contain', maxHeight: '40vh' }} />
+                            : <video src={`${x.url.startsWith('http') ? '' : 'http://admin.garaptg.online'}${x.url}`} style={{ objectFit: 'contain', maxHeight: '40vh' }} />)}
                     </Box>
                     {challenge.type === 'scelta_multipla' && (
                         <RadioButtonGroup
