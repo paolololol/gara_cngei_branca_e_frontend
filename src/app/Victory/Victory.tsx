@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Heading, Paragraph, Box } from 'grommet'
+import { Heading, Paragraph, Box, Button } from 'grommet'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import styled from 'styled-components'
 import cngei from '../../assets/cngei.png'
@@ -17,11 +17,18 @@ const StyledLink = styled(Link)`
     font-weight: 500;
 `
 
+const LogoutBox = styled(Box)`
+    position: fixed;
+    top: 16px;
+    right: 16px;
+`
+
 interface HomeProps {
-    login: State<User>
+    login: State<User>,
+    logout: () => void
 }
 
-const Home: React.FC<HomeProps & RouteComponentProps> = ({login, history}) => {
+const Home: React.FC<HomeProps & RouteComponentProps> = ({login, logout, history}) => {
     const now = Date.now()
     const target = Date.parse('March 30, 2020 16:55:00 GMT+01:00')
     const [challengeHasBegun, setChallengeHasBegun] = useState(now > target)
@@ -49,6 +56,9 @@ const Home: React.FC<HomeProps & RouteComponentProps> = ({login, history}) => {
                     Gli staff stanno controllando le tue risposte prima di pubblicare la classifica finale!
                 </Heading>
             </Box>
+                <LogoutBox>
+                    <Button label='Esci' color='light-2' onClick={logout} />
+                </LogoutBox>
         </Box>
     )
 }

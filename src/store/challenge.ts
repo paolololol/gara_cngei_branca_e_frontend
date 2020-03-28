@@ -1,7 +1,7 @@
 import State from '../@types/State'
 import axios from 'axios'
 
-import { createSlice, PayloadAction, SliceCaseReducers, Dispatch } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, SliceCaseReducers, Dispatch, bindActionCreators } from '@reduxjs/toolkit';
 import { AppThunk, RootState } from './store';
 
 export interface Attachment {
@@ -27,11 +27,13 @@ export interface Challenge {
 type ChallengeState = {
     challenges: State<Challenge[]>
     submit: State<null>
+    upload: number
 };
 
 const initialState: ChallengeState = {
     challenges: { status: 'NotAsked' },
-    submit: { status: 'NotAsked' }
+    submit: { status: 'NotAsked' },
+    upload: 0
 };
 
 export const slice = createSlice<ChallengeState, SliceCaseReducers<ChallengeState>>({
@@ -56,6 +58,8 @@ export const slice = createSlice<ChallengeState, SliceCaseReducers<ChallengeStat
                 error: action.payload
             }
         }),
+        _setUploadProgress: (state, action: PayloadAction<number>) => 
+        ({ ...state, upload: action.payload  } )
     }
 });
 
@@ -74,6 +78,21 @@ export const getChallenges = (): AppThunk => async dispatch => {
         dispatch(_setError(e.message))
     }
 };
+
+export const refreshChallenge = (id: number) => async(dispatch: Dispatch, getState: () => RootState) => {
+    const {_setChallenge} = slice.actions
+    try {
+        const currentChallenges = getState().challenge.challenges
+        if(currentChallenges.status !== 'Success') return;
+        const challenge = currentChallenges.data[id] 
+        const { data } = await axios.get('http://admin.garaptg.online/sfides/' + challenge.id)
+        const newChallenges = [...currentChallenges.data]
+        newChallenges[id] = data 
+        dispatch(_setChallenge(newChallenges))
+    } catch(e) {
+        console.log(e)
+    }
+}
 
 export const submitChallenge = (id: number, value: string) => async (dispatch: Dispatch, getState: () => RootState) => {
     const { _setSubmitError, _setSubmitting, _resetSubmitting, _setChallenge } = slice.actions;
@@ -94,7 +113,7 @@ export const submitChallenge = (id: number, value: string) => async (dispatch: D
 }
 
 export const uploadFile = (id: number, file: any): AppThunk => async (dispatch, getState) => {
-    const { _setSubmitError, _setSubmitting, _resetSubmitting, _setChallenge } = slice.actions;
+    const { _setSubmitError, _setSubmitting, _resetSubmitting, _setUploadProgress} = slice.actions;
     dispatch(_setSubmitting(null));
     try {
         const currentChallenges = getState().challenge.challenges
@@ -119,7 +138,13 @@ export const uploadFile = (id: number, file: any): AppThunk => async (dispatch, 
         formData.append('ref', 'submission')
         formData.append('field', 'attachments')
 
-        await axios.post('http://admin.garaptg.online/upload', formData)
+        await axios.post('http://admin.garaptg.online/upload', formData, {onUploadProgress: (progress) => {
+            try {
+                dispatch(_setUploadProgress((progress.loaded / progress.total * 100).toFixed(0)))
+            } catch(e) {
+                console.log(e)
+            }
+        }})
         dispatch(_resetSubmitting(null))
         await getChallenges()(dispatch, getState, null)
     } catch (e) {

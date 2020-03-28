@@ -10,8 +10,10 @@ interface ChallengeProps {
     challenges: State<IChallenge[]>,
     login: State<User>,
     submitStatus: State<null>,
+    upload: number,
     getChallenges: () => void
     logout: () => void
+    refreshChallenge: (id: number) => void
     submitChallenge: (id: number, value: string) => void
     uploadFile: (id: number, value: string) => void
 }
@@ -23,9 +25,9 @@ const LogoutBox = styled(Box)`
 `
 
 const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({
-    history, submitStatus, uploadFile,
+    history, submitStatus, uploadFile, upload, refreshChallenge,
     login, logout, challenges, getChallenges, submitChallenge }) => {
-    const [challengeNumber, setCurrentChallengeNumber] = useState(0)
+    const [challengeNumber, setCurrentChallengeNumber] = useState(-1)
     const [value, setValue] = useState<string>('')
     const [error, setError] = useState<boolean>(false)
     const fileRef = useRef(null)
@@ -38,15 +40,15 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({
     useEffect(() => {
         if (challenges.status === 'Success' && !challenges.data.filter(x => !x.submissions.length).length) {
             history.replace('/victory')
-        } else if (challenges.status === 'Success') {
+        } else if (challengeNumber < 0 && challenges.status === 'Success') {
             setCurrentChallengeNumber(
                 challenges.data.findIndex(x => !x.submissions.length)
             )
         }
-    }, [challenges, history])
+    }, [challengeNumber, challenges, history])
 
 
-    if (!challenges || challenges.status !== 'Success') return null
+    if (challengeNumber < 0 || !challenges || challenges.status !== 'Success') return null
     else {
         const challenge: IChallenge = (challenges as any).data[challengeNumber]
         const handleFile = (event: any) => uploadFile(challenge.id, event.target.files[0])
@@ -54,8 +56,14 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({
             <Box wrap direction='row' pad='small' align='center' justify='center' height='100%' overflow='auto'>
                 <Box background='white' pad='small' round='medium'>
                     <Box direction='row' justify='center' gap='medium'>
-                        <Button label='Indietro' disabled={challengeNumber === 0} onClick={() => setCurrentChallengeNumber(n => n - 1)} />
-                        <Button label='Avanti' disabled={challengeNumber === (challenges.data.length - 1)} onClick={() => setCurrentChallengeNumber(n => n + 1)} />
+                        <Button label='Indietro' disabled={challengeNumber === 0} onClick={() => {
+                            refreshChallenge(challengeNumber-1)
+                            setCurrentChallengeNumber(n => n - 1)
+                        }} />
+                        <Button label='Avanti' disabled={challengeNumber === (challenges.data.length - 1)} onClick={() => {
+                            refreshChallenge(challengeNumber+1)
+                            setCurrentChallengeNumber(n => n + 1)
+                            }} />
                     </Box>
                     <Heading level={2} margin='small'>{challenge.title}</Heading>
                     <Text size='small' margin='xsmall'>Sfida n.{challengeNumber + 1}</Text>
@@ -85,11 +93,12 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({
                     {challenge.type === 'upload' && (
                         <>
                         <input type='file' name='file' onChange={handleFile} ref={fileRef} style={{display: 'none'}}/>
+                    {challenge.submissions.length ? <Text>{challenge.submissions[0].attachments.length} file caricati</Text> : null}
                         <Button
                             margin={{ top: 'small' }}
                             disabled={(challenge.submissions.length && challenge.submissions[0].attachments.length && !challenge.multiple)|| submitStatus.status === 'Loading'}
                             primary
-                            label={submitStatus.status === 'Loading' ? '...' : 'Carica file'}
+                            label={submitStatus.status === 'Loading' ? `Upload: ${upload}%` : 'Carica file'}
                             onClick={() => (fileRef.current as any).click()}/>
                         </>
                     )}

@@ -1,7 +1,10 @@
-import Home from './Home'
+import Victory from './Victory'
 import { RootState } from '../../store/store'
 import { connect } from 'react-redux'
 
-const mapStateToProps = (state: RootState) => ({login: state.login})
+import {logout} from '../../store/user'
 
-export default connect(mapStateToProps)(Home)
+const mapStateToProps = (state: RootState) => ({login: state.login})
+const mapDispatchToProps = ({logout})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Victory)
