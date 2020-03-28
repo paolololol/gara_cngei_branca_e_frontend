@@ -68,7 +68,7 @@ export const getChallenges = (): AppThunk => async dispatch => {
     const { _setChallenge, _setError, _setLoading } = slice.actions;
     dispatch(_setLoading(null));
     try {
-        const { data } = await axios.get('http://cngeiptg.think3.tech:1337/sfides')
+        const { data } = await axios.get('http://admin.garaptg.online/sfides')
         dispatch(_setChallenge(data.sort((a: Challenge, b: Challenge) => a.id < b.id ? -1 : 1)))
     } catch (e) {
         dispatch(_setError(e.message))
@@ -81,7 +81,7 @@ export const submitChallenge = (id: number, value: string) => async (dispatch: D
     try {
         const currentChallenges = getState().challenge.challenges
         if(currentChallenges.status !== 'Success') return;
-        const { data } = await axios.post('http://cngeiptg.think3.tech:1337/submissions', { challenge: id, answer: value })
+        const { data } = await axios.post('http://admin.garaptg.online/submissions', { challenge: id, answer: value })
         const newChallenges = [...currentChallenges.data]
         const challengeIndex = newChallenges.findIndex(x => x.id === id)
         newChallenges[challengeIndex] = {...newChallenges[challengeIndex], submissions: [data]}
@@ -119,7 +119,7 @@ export const uploadFile = (id: number, file: any): AppThunk => async (dispatch, 
         formData.append('ref', 'submission')
         formData.append('field', 'attachments')
 
-        await axios.post('http://cngeiptg.think3.tech:1337/upload', formData)
+        await axios.post('http://admin.garaptg.online/upload', formData)
         dispatch(_resetSubmitting(null))
         await getChallenges()(dispatch, getState, null)
     } catch (e) {

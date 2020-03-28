@@ -58,7 +58,7 @@ export const login = (loginData: LoginData): AppThunk => async dispatch => {
     const { _setLoading, _setError, _login } = slice.actions;
     dispatch(_setLoading(null));
     try {
-        const { data } = await axios.post('http://cngeiptg.think3.tech:1337/auth/local', loginData)
+        const { data } = await axios.post('http://admin.garaptg.online/auth/local', loginData)
         axios.defaults.headers["Authorization"] = `Bearer ${data.jwt}`
         localStorage.setItem('user', JSON.stringify(data))
         dispatch(_login(data))
