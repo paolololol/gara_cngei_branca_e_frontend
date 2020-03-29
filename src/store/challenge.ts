@@ -25,16 +25,28 @@ export interface Challenge {
     answers: string
 }
 
+interface LeaderboardEntry {
+    ptg: string,
+    gruppo: string,
+    sezione: string,
+    score: number
+}
+
+export type LeaderboardEntries = LeaderboardEntry[]
+
 type ChallengeState = {
     challenges: State<Challenge[]>
+    leaderboard: State<LeaderboardEntries>
     submit: State<null>
     upload: number
 };
 
+
 const initialState: ChallengeState = {
     challenges: { status: 'NotAsked' },
     submit: { status: 'NotAsked' },
-    upload: 0
+    upload: 0,
+    leaderboard: { status: 'NotAsked' }
 };
 
 export const slice = createSlice<ChallengeState, SliceCaseReducers<ChallengeState>>({
@@ -60,7 +72,13 @@ export const slice = createSlice<ChallengeState, SliceCaseReducers<ChallengeStat
             }
         }),
         _setUploadProgress: (state, action: PayloadAction<number>) => 
-        ({ ...state, upload: action.payload  } )
+        ({ ...state, upload: action.payload  } ),
+        _setLeaderboard: (state, action: PayloadAction<LeaderboardEntries>) => 
+        ({ ...state, leaderboard: {status: 'Success', data: action.payload  } }),
+        _setLeaderboardLoading: (state) => 
+        ({ ...state, leaderboard: {status: 'Loading' } }),
+        _setLeaderboardError: (state, action: PayloadAction<string>) => 
+        ({ ...state, leaderboard: {status: 'Failure', error: action.payload } })
     }
 });
 
@@ -77,6 +95,17 @@ export const getChallenges = (): AppThunk => async dispatch => {
         dispatch(_setChallenge(data.sort((a: Challenge, b: Challenge) => a.id < b.id ? -1 : 1)))
     } catch (e) {
         dispatch(_setError(e.message))
+    }
+};
+
+export const getLeaderboard = (): AppThunk => async dispatch => {
+    const { _setLeaderboard, _setLeaderboardError, _setLeaderboardLoading } = slice.actions;
+    dispatch(_setLeaderboardLoading(null));
+    try {
+        const { data } = await axios.get('http://admin.garaptg.online/submissions/leaderboard')
+        dispatch(_setLeaderboard(data))
+    } catch (e) {
+        dispatch(_setLeaderboardError(e.message))
     }
 };
 
