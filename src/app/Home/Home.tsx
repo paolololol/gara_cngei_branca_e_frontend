@@ -26,7 +26,7 @@ const Countdown: React.FC<{ setBegun: () => void }> = ({ setBegun }) => (
         <Heading level={4} textAlign='center' margin='xsmall'>Mancano...</Heading>
         <DateCountdown
             callback={setBegun}
-            dateTo='March 29, 2020 15:00:00 GMT+01:00'
+            dateTo='March 29, 2020 15:00:00 GMT+02:00'
             locales={[null, null, 'giorni', 'ore', 'minuti', 'secondi']}
             locales_plural={[null, null, 'giorni', 'ore', 'minuti', 'secondi']}
         />
@@ -43,7 +43,7 @@ const Home: React.FC<HomeProps & RouteComponentProps> = ({login, history}) => {
             history.replace('/challenge')
     }, [history, login])
     const now = Date.now()
-    const target = Date.parse('March 30, 2020 16:55:00 GMT+01:00')
+    const target = Date.parse('March 29, 2020 15:00:00 GMT+02:00')
     const [challengeHasBegun, setChallengeHasBegun] = useState(now > target)
     return (
         <Box

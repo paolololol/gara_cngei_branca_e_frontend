@@ -19,6 +19,7 @@ export interface Challenge {
     attachment: Attachment[]
     submissions: Array<{
         id: number,
+        answer: string
         attachments: string[]
     }>
     answers: string

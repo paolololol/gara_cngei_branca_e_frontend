@@ -53,18 +53,20 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({
         const challenge: IChallenge = (challenges as any).data[challengeNumber]
         const handleFile = (event: any) => uploadFile(challenge.id, event.target.files[0])
         return (
-            <Box wrap direction='row' pad='small' align='center' justify='center' height='100%' overflow='auto'>
-                <Box background='white' pad='small' round='medium'>
-                    <Box direction='row' justify='center' gap='medium'>
-                        <Button label='Indietro' disabled={challengeNumber === 0} onClick={() => {
-                            refreshChallenge(challengeNumber-1)
-                            setCurrentChallengeNumber(n => n - 1)
+            <Box wrap direction='row' pad='small' align='center' justify='center' height='100vh' overflow='auto'>
+                <Box direction='row' justify='between' gap='medium' alignSelf='start'>
+                    <Button label='Indietro' disabled={challengeNumber === 0 || submitStatus.status === 'Loading'} onClick={() => {
+                        refreshChallenge(challengeNumber-1)
+                        setCurrentChallengeNumber(n => n - 1)
+                    }} />
+                    <Button label='Avanti' disabled={challengeNumber === (challenges.data.length - 1) || submitStatus.status === 'Loading'} onClick={() => {
+                        refreshChallenge(challengeNumber+1)
+                        setCurrentChallengeNumber(n => n + 1)
                         }} />
-                        <Button label='Avanti' disabled={challengeNumber === (challenges.data.length - 1)} onClick={() => {
-                            refreshChallenge(challengeNumber+1)
-                            setCurrentChallengeNumber(n => n + 1)
-                            }} />
-                    </Box>
+                    <Button label='Esci' color='light-2' onClick={logout} />
+                </Box>
+                <Box style={{maxHeight: '80vh', display: 'block'}} overflow='auto' alignSelf='center'>
+                <Box background='white' pad='small' round='medium' overflow='auto'>
                     <Heading level={2} margin='small'>{challenge.title}</Heading>
                     <Text size='small' margin='xsmall'>Sfida n.{challengeNumber + 1}</Text>
                     <Paragraph margin='xsmall'>{challenge.description}</Paragraph>
@@ -77,16 +79,21 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({
                         <RadioButtonGroup
                             name='multiple'
                             disabled={!!challenge.submissions.length}
-                            options={challenge.answers.split('\n').filter(x => x.trim().length)}
-                            value={value}
+                            options={challenge.answers.split('\n').filter(x => x.trim().length).map(x => x.trim())}
+                            value={challenge.submissions.length ? challenge.submissions[0].answer.trim() : value}
                             onChange={(event: any) => setValue(event.target.value)}
                         />
                     )}
-                    {(challenge.type === 'risposta_libera' || challenge.type === 'risposta_aperta') && !challenge.submissions.length &&
-                        <TextArea onChange={(event: any) => setValue(event.target.value)} placeholder='Inserisci la risposta' />}
+                    {(challenge.type === 'risposta_libera' || challenge.type === 'risposta_aperta') &&
+                        <TextArea onChange={(event: any) => setValue(event.target.value)} 
+                        disabled={!!challenge.submissions.length}
+                        placeholder={
+                            challenge.submissions.length ? challenge.submissions[0].answer :
+                            'Inserisci la risposta'} 
+                        />}
                     {challenge.type !== 'upload' && (<Button
                         margin={{ top: 'small' }}
-                        disabled={!!challenge.submissions.length || submitStatus.status === 'Loading'}
+                        disabled={!value || !!challenge.submissions.length || submitStatus.status === 'Loading'}
                         primary
                         label={submitStatus.status === 'Loading' ? '...' : 'Salva'}
                         onClick={() => submitChallenge(challenge.id, value)} />)}
@@ -103,9 +110,7 @@ const Challenge: React.FC<ChallengeProps & RouteComponentProps> = ({
                         </>
                     )}
                 </Box>
-                <LogoutBox>
-                    <Button label='Esci' color='light-2' onClick={logout} />
-                </LogoutBox>
+                </Box>
             </Box>
         )
     }
